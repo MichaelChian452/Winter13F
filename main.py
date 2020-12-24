@@ -3,6 +3,7 @@ import xml.etree.ElementTree as ET
 namespaces = {'place': 'http://www.sec.gov/edgar/document/thirteenf/informationtable',
 'other_thing': 'http://www.w3.org/2001/XMLSchema-instance'}
 stocks = []
+#dont use this file
 
 def parse():
     root = ET.parse('0000950123-20-012127-1653.xml').getroot()
