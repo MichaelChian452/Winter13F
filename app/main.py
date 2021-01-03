@@ -74,7 +74,7 @@ def parseWeb(url):
     file = open("data.txt", "a")
     file.write("Company                            Holdings\n")
     for stock in stocks:
-        file.write(stock["name"] + "\t" + "{:,}".format(stock["amount"]) + "\n")
+        file.write(stock["name"] + "," + "{:,}".format(stock["amount"]) + "\n")
         spaces = ""
     file.close()
     stocks.clear()
@@ -136,9 +136,9 @@ def compare():
     for stock in bought:
         for n in range(35 - len(stock["name"])):
             spaces += " "
-        file.write(stock["name"] + "\t" + "{:,}".format(stock["change"]))
+        file.write(stock["name"] + "," + "{:,}".format(stock["change"]))
         if stock["isAll"] == True:
-            file.write("\t(New company)")
+            file.write(",(New company)")
         file.write("\n")
         spaces = ""
 
@@ -147,9 +147,9 @@ def compare():
     for stock in sold:
         for n in range(35 - len(stock["name"])):
             spaces += " "
-        file.write(stock["name"] + "\t" + "{:,}".format(stock["change"]))
+        file.write(stock["name"] + "," + "{:,}".format(stock["change"]))
         if stock["isAll"] == True:
-            file.write("\t(All stocks of that company)")
+            file.write(",(All stocks of that company)")
         file.write("\n")
         spaces = ""
     
@@ -158,7 +158,7 @@ def compare():
     for stock in same:
         for n in range(35 - len(stock["name"])):
             spaces += " "
-        file.write(stock["name"] + "\t" + "{:,}".format(stock["amount"]))
+        file.write(stock["name"] + "," + "{:,}".format(stock["amount"]))
         file.write("\n")
         spaces = ""
     file.close()
