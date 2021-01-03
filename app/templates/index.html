@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<head>
+    <title>13F</title>
+</head>
+<body>
+    <form id="paste-links" method="POST" enctype="multipart/form-data" style="padding: 40px 20px; text-align: left;">
+        <label for="link1">Paste link to the first XML file (Old XML file) here: </label>
+        <input type="text" name="link1">
+        <label for="link1">Filing date of the first XML file: </label>
+        <input type="date" name="date1">
+        <br><br>
+        <label for="link2">Paste link to the second XML file (New XML file) here: </label>
+        <input type="text" name="link2">
+        <label for="link1">Filing date of the second XML file: </label>
+        <input type="date" name="date2">
+        <br><br><br><br>
+        <input type="submit" value="Submit" class="button" style="font-size: 16px; padding: 10px 30px;">
+    </form>
+    <br>
+
+    <div id="table" style="white-space: pre-wrap;">
+        <p>{{ table }}</p>
+    </div>
+</body>
