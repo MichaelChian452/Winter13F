@@ -8,6 +8,13 @@ namespaces = {'place': 'http://www.sec.gov/edgar/document/thirteenf/informationt
 'other_thing': 'http://www.w3.org/2001/XMLSchema-instance'}
 allHoldings = []
 stocks = []
+dates = []
+output = []
+changeOutput = []
+
+def listToString(l):
+    s = "\n"
+    return s.join(l)
 
 def parseXML():
     root = ET.parse('0000950123-20-012127-1653.xml').getroot()
@@ -30,22 +37,18 @@ def parseXML():
         else:
             stocks.append(each)
     print(stocks)
-    spaces = ""
-    file = open("data.txt", "a")
-    file.write("yeet\n")
-    file.write("Company                            Holdings\n")
+    output.append("Company\tHoldings")
     for stock in stocks:
         for n in range(35 - len(stock["name"])):
             spaces += " "
-        file.write(stock["name"] + spaces + "{:,}".format(stock["amount"]) + "\n")
+        output.append(stock["name"] + spaces + "{:,}".format(stock["amount"]))
         spaces = ""
-    file.close()
 
 #@app.route("/", methods=["POST", "GET"])
 #def index():
 #    parse()
 
-def parseWeb(url):
+def parseWeb(url, date):
     response = urllib.request.urlopen(url).read()
     tree = ET.fromstring(response)
     for stock in tree.findall('place:infoTable', namespaces):
@@ -56,7 +59,8 @@ def parseWeb(url):
         each = {
             "name": name,
             "amount": int(amount),
-            "class": clss
+            "class": clss,
+            "date": date
         }
         inList = False
         pos = 0
@@ -71,12 +75,10 @@ def parseWeb(url):
             stocks.append(each)
     allHoldings.append(stocks.copy())
     spaces = ""
-    file = open("data.txt", "a")
-    file.write("Company                            Holdings\n")
+    output.append("Company\tHoldings")
     for stock in stocks:
-        file.write(stock["name"] + "\t" + "{:,}".format(stock["amount"]) + "\n")
+        output.append(stock["name"] + "\t" + "{:,}".format(stock["amount"]) + "\t" + stock["date"])
         spaces = ""
-    file.close()
     stocks.clear()
 
 found1 = []
@@ -129,39 +131,36 @@ def compare():
             "amount": stock["amount"]
         } 
         bought.append(changes)
-    file = open("data.txt", "a")
-    file.write("-------------------------------------------\nALL STOCKS THAT WERE BOUGHT BETWEEN HOLDING 1 AND HOLDING 2\n")
-    file.write("Company                            Holdings\n")
+    changeOutput.append("-------------------------------------------\nALL STOCKS THAT WERE BOUGHT BETWEEN HOLDING 1 AND HOLDING 2")
+    changeOutput.append("Company\tHoldings")
     spaces = ""
     for stock in bought:
         for n in range(35 - len(stock["name"])):
             spaces += " "
-        file.write(stock["name"] + "\t" + "{:,}".format(stock["change"]))
+        s = stock["name"] + "\t" + "{:,}".format(stock["change"])
         if stock["isAll"] == True:
-            file.write("\t(New company)")
-        file.write("\n")
+            s += "\t(New company)"
+        changeOutput.append(s)
         spaces = ""
 
-    file.write("-------------------------------------------\nALL STOCKS THAT WERE SOLD BETWEEN HOLDING 1 AND HOLDING 2\n")
-    file.write("Company                            Holdings\n")
+    changeOutput.append("-------------------------------------------\nALL STOCKS THAT WERE SOLD BETWEEN HOLDING 1 AND HOLDING 2")
+    changeOutput.append("Company\tHoldings")
     for stock in sold:
         for n in range(35 - len(stock["name"])):
             spaces += " "
-        file.write(stock["name"] + "\t" + "{:,}".format(stock["change"]))
+        s = stock["name"] + "\t" + "{:,}".format(stock["change"])
         if stock["isAll"] == True:
-            file.write("\t(All stocks of that company)")
-        file.write("\n")
+            s += "\t(All stocks of that company)"
+        changeOutput.append(s)
         spaces = ""
     
-    file.write("-------------------------------------------\nNO CHANGE BETWEEN HOLDING 1 AND HOLDING 2\n")
-    file.write("Company                            Holdings\n")
+    changeOutput.append("-------------------------------------------\nNO CHANGE BETWEEN HOLDING 1 AND HOLDING 2")
+    changeOutput.append("Company\tHoldings")
     for stock in same:
         for n in range(35 - len(stock["name"])):
             spaces += " "
-        file.write(stock["name"] + "\t" + "{:,}".format(stock["amount"]))
-        file.write("\n")
+        changeOutput.append(stock["name"] + "\t" + "{:,}".format(stock["amount"]))
         spaces = ""
-    file.close()
 
 @app.route("/", methods=["POST", "GET"])
 def primary():
@@ -171,18 +170,16 @@ def primary():
         url1 = request.form["link1"]
         url2 = request.form["link2"]
         #url1 = "https://www.sec.gov/Archives/edgar/data/1067983/000095012320009058/960.xml"
-        file = open("data.txt", "w")
-        file.write("The first holding:\n")
-        file.close()
-        parseWeb(url1)
+        output.append("The first holding (" + url1 + "):")
+        parseWeb(url1, request.form["date1"])
         #url2 = "https://www.sec.gov/Archives/edgar/data/1067983/000095012320012127/0000950123-20-012127-1653.xml"
-        file = open("data.txt", "a")
-        file.write("The second holding:\n")
-        file.close()
-        parseWeb(url2)
+        output.append("The second holding (" + url2 + "):")
+        parseWeb(url2, request.form["date2"])
         compare()
-        with open('data.txt', 'r') as file:
-            fulltext = file.read()
+        fulltext = listToString(changeOutput)
+        fulltext += "\n"
+        fulltext += listToString(output)
+
         return render_template("index.html", table=fulltext)
     else:
         return render_template("index.html", table="")
