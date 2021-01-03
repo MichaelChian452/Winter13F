@@ -1,7 +1,6 @@
 import xml.etree.ElementTree as ET
 import urllib.request
 from flask import Flask, render_template, session, request, send_file, Response, redirect, url_for, flash
-from flask_session import Session
 
 app = Flask(__name__)
 
