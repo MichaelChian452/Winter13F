@@ -16,9 +16,20 @@
         <br><br><br><br>
         <input type="submit" value="Submit" class="button" style="font-size: 16px; padding: 10px 30px;">
     </form>
-    <br>
 
+    <button id="copy">Copy to clipboard</button>
     <div id="table" style="white-space: pre-wrap;">
-        <p>{{ table }}</p>
+        <textarea id="result" readonly style="width: 100%; min-height: 600px;">{{ table }}</textarea>
     </div>
+    <script>
+        document.getElementById('copy').addEventListener('click', () => {
+            const result = document.getElementById('result').innerText;
+            navigator.clipboard.writeText(result)
+                .then(() => {
+                    console.log('copied.');
+                }).catch(() => {
+                    console.error('unable to copy.');
+                });
+        });
+    </script>
 </body>
