@@ -53,7 +53,7 @@ def parseWeb(url):
         name = stock.find('place:nameOfIssuer', namespaces).text
         amount = stock.find('place:shrsOrPrnAmt', namespaces).find('place:sshPrnamt', namespaces).text
         clss = stock.find('place:titleOfClass', namespaces).text
-        if 
+        #if 
         each = {
             "name": name,
             "amount": int(amount),
