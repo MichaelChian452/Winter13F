@@ -18,18 +18,22 @@
     </form>
 
     <button id="copy">Copy to clipboard</button>
+    <button id="clear">Clear</button>
     <div id="table" style="white-space: pre-wrap;">
-        <textarea id="result" readonly style="width: 100%; min-height: 600px;">{{ table }}</textarea>
+        <textarea id="result" readonly autocomplete="off" style="width: 80%; min-height: 600px;">{{ table }}</textarea>
     </div>
     <script>
         document.getElementById('copy').addEventListener('click', () => {
-            const result = document.getElementById('result').textContent;
+            const result = document.getElementById('result').value;
             navigator.clipboard.writeText(result)
                 .then(() => {
                     console.log('copied.');
                 }).catch(() => {
                     console.error('unable to copy.');
                 });
+        });
+        document.getElementById('clear').addEventListener('click', () => {
+            document.getElementById('result').value = '';
         });
     </script>
 </body>
