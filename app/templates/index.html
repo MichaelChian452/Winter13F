@@ -23,7 +23,7 @@
     </div>
     <script>
         document.getElementById('copy').addEventListener('click', () => {
-            const result = document.getElementById('result').innerText;
+            const result = document.getElementById('result').textContent;
             navigator.clipboard.writeText(result)
                 .then(() => {
                     console.log('copied.');
