@@ -11,6 +11,13 @@ def listToString(l):
     s = "\n"
     return s.join(l)
 
+def printText(request, url1, url2):
+    fulltext = "1st link (old): " + url1 + "\nDate 1: " + request.form["date1"] + "\n2nd link (new): " + url2 + "\nDate 2: " + request.form["date2"] + "\n"
+    fulltext += listToString(request.changeOutput)
+    fulltext += "\n"
+    fulltext += listToString(request.output)
+    return fulltext
+
 #@app.route("/", methods=["POST", "GET"])
 #def index():
 #    parse()
@@ -41,9 +48,6 @@ def parseWeb(request, url, date):
         else:
             request.stocks.append(each)
     request.allHoldings.append(request.stocks.copy())
-    request.output.append("Company\tHoldings")
-    for stock in request.stocks:
-        request.output.append(stock["name"] + "\t" + "{:,}".format(stock["amount"]) + "\t" + stock["date"])
     request.stocks.clear()
 
 found1 = []
@@ -57,6 +61,7 @@ def compare(request):
 
     copy1 = request.allHoldings[0].copy()
     copy2 = request.allHoldings[1].copy()
+    listing = ""
 
     for stock in request.allHoldings[0]:
         for s in request.allHoldings[1]:
@@ -69,14 +74,19 @@ def compare(request):
                     "isAll": False,
                     "amount": stock["amount"]
                 }
+                listing = stock["name"] + "\t" + "{:,}".format(stock["amount"]) + "\t" + stock["date"] + "\t" + "{:,}".format(s["amount"]) + "\t" + s["date"] + "\t"
                 if change < 0:
+                    listing += "SELL"
                     sold.append(changes)
                 elif change > 0:
+                    listing += "BUY"
                     bought.append(changes)
                 else:
+                    listing += "NC"
                     same.append(changes)
                 copy1.remove(stock)
                 copy2.remove(s)
+                request.output.append(listing)
                 break
     #print("checking for new ones")
     for stock in copy1:
@@ -87,6 +97,9 @@ def compare(request):
             "isAll": True,
             "amount": stock["amount"]
         }
+        listing = stock["name"] + "\t" + "{:,}".format(stock["amount"]) + "\t" + stock["date"] + "\t0\t" + request.allHoldings[1][0]["date"] + "\t"
+        listing += "LIQUIDATE"
+        request.output.append(listing)
         sold.append(changes)
     for stock in copy2:
         changes = {
@@ -95,37 +108,34 @@ def compare(request):
             "isAll": True,
             "amount": stock["amount"]
         } 
+        listing = stock["name"] + "\t0\t" + request.allHoldings[0][0]["date"] + "\t" + "{:,}".format(stock["amount"]) + "\t" + stock["date"] + "\t"
+        listing += "INITIATE"
+        request.output.append(listing)
         bought.append(changes)
     request.changeOutput.append("-------------------------------------------\nALL STOCKS THAT WERE BOUGHT BETWEEN HOLDING 1 AND HOLDING 2")
     request.changeOutput.append("Company\tHoldings")
-    spaces = ""
     for stock in bought:
-        for n in range(35 - len(stock["name"])):
-            spaces += " "
         s = stock["name"] + "\t" + "{:,}".format(stock["change"])
         if stock["isAll"] == True:
             s += "\t(New company)"
         request.changeOutput.append(s)
-        spaces = ""
 
     request.changeOutput.append("-------------------------------------------\nALL STOCKS THAT WERE SOLD BETWEEN HOLDING 1 AND HOLDING 2")
     request.changeOutput.append("Company\tHoldings")
     for stock in sold:
-        for n in range(35 - len(stock["name"])):
-            spaces += " "
         s = stock["name"] + "\t" + "{:,}".format(stock["change"])
         if stock["isAll"] == True:
-            s += "\t(All request.stocks of that company)"
+            s += "\t(All stocks of that company)"
         request.changeOutput.append(s)
-        spaces = ""
     
     request.changeOutput.append("-------------------------------------------\nNO CHANGE BETWEEN HOLDING 1 AND HOLDING 2")
     request.changeOutput.append("Company\tHoldings")
     for stock in same:
-        for n in range(35 - len(stock["name"])):
-            spaces += " "
         request.changeOutput.append(stock["name"] + "\t" + "{:,}".format(stock["amount"]))
-        spaces = ""
+        
+    request.output.append("Company\tHoldings")
+    request.output.append("-------------------------------------------")
+    request.output.reverse()
 
 @app.route("/", methods=["POST", "GET"])
 def primary():
@@ -138,16 +148,11 @@ def primary():
         url1 = request.form["link1"]
         url2 = request.form["link2"]
         #url1 = "https://www.sec.gov/Archives/edgar/data/1067983/000095012320009058/960.xml"
-        request.output.append("The first holding (" + url1 + "):")
         parseWeb(request, url1, request.form["date1"])
         #url2 = "https://www.sec.gov/Archives/edgar/data/1067983/000095012320012127/0000950123-20-012127-1653.xml"
-        request.output.append("The second holding (" + url2 + "):")
         parseWeb(request, url2, request.form["date2"])
         compare(request)
-        fulltext = listToString(request.changeOutput)
-        fulltext += "\n"
-        fulltext += listToString(request.output)
-
+        fulltext = printText(request, url1, url2)
         return render_template("index.html", table=fulltext)
     else:
         return render_template("index.html", table="")
