@@ -1,11 +1,9 @@
 import xml.etree.ElementTree as ET
 import urllib.request
-from flask import Flask, render_template, session, request, send_file, Response, redirect, url_for, flash
+import xmlparser
+from flask import Flask, render_template, request, url_for
 
 app = Flask(__name__)
-
-namespaces = {'place': 'http://www.sec.gov/edgar/document/thirteenf/informationtable',
-'other_thing': 'http://www.w3.org/2001/XMLSchema-instance'}
 
 def listToString(l):
     s = "\n"
@@ -22,33 +20,6 @@ def printText(request, url1, url2):
 #def index():
 #    parse()
 
-def parseWeb(request, url, date):
-    response = urllib.request.urlopen(url).read()
-    tree = ET.fromstring(response)
-    for stock in tree.findall('place:infoTable', namespaces):
-        name = stock.find('place:nameOfIssuer', namespaces).text
-        amount = stock.find('place:shrsOrPrnAmt', namespaces).find('place:sshPrnamt', namespaces).text
-        clss = stock.find('place:titleOfClass', namespaces).text
-        #if 
-        each = {
-            "name": name,
-            "amount": int(amount),
-            "class": clss,
-            "date": date
-        }
-        inList = False
-        pos = 0
-        for stock in request.stocks:
-            if stock['name'] == each['name']:
-                inList = True
-                pos = request.stocks.index(stock)
-                break
-        if inList:
-            request.stocks[pos]['amount'] = request.stocks[pos]['amount'] + each['amount']
-        else:
-            request.stocks.append(each)
-    request.allHoldings.append(request.stocks.copy())
-    request.stocks.clear()
 
 found1 = []
 found2 = []
@@ -76,11 +47,11 @@ def compare(request):
                 }
                 listing = stock["name"] + "\t" + "{:,}".format(stock["amount"]) + "\t" + stock["date"] + "\t" + "{:,}".format(s["amount"]) + "\t" + s["date"] + "\t"
                 if change < 0:
-                    listing += "SELL"
-                    sold.append(changes)
-                elif change > 0:
                     listing += "BUY"
                     bought.append(changes)
+                elif change > 0:
+                    listing += "SELL"
+                    sold.append(changes)
                 else:
                     listing += "NC"
                     same.append(changes)
@@ -132,7 +103,7 @@ def compare(request):
     request.changeOutput.append("Company\tHoldings")
     for stock in same:
         request.changeOutput.append(stock["name"] + "\t" + "{:,}".format(stock["amount"]))
-        
+    
     request.output.append("Company\tHoldings")
     request.output.append("-------------------------------------------")
     request.output.reverse()
@@ -148,9 +119,9 @@ def primary():
         url1 = request.form["link1"]
         url2 = request.form["link2"]
         #url1 = "https://www.sec.gov/Archives/edgar/data/1067983/000095012320009058/960.xml"
-        parseWeb(request, url1, request.form["date1"])
+        xmlparser.parseWeb(request, url1, request.form["date1"])
         #url2 = "https://www.sec.gov/Archives/edgar/data/1067983/000095012320012127/0000950123-20-012127-1653.xml"
-        parseWeb(request, url2, request.form["date2"])
+        xmlparser.parseWeb(request, url2, request.form["date2"])
         compare(request)
         fulltext = printText(request, url1, url2)
         return render_template("index.html", table=fulltext)
