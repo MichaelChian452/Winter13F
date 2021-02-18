@@ -2,12 +2,12 @@ import xml.etree.ElementTree as ET
 import urllib.request
 from flask import Flask, render_template, request, url_for
 
+#finding the path to the app directory so that import xmlparser knows which directory to look in
 import sys
 from pathlib import Path
 file = Path(__file__).resolve()
-package_root_directory = file.parents[0]
-sys.path.append(str(package_root_directory))
-print(str(package_root_directory))
+app_directory = file.parents[0]
+sys.path.append(str(app_directory))
 
 import xmlparser
 
@@ -55,12 +55,12 @@ def compare(request):
                     "amount": stock["amount"]
                 }
                 listing = stock["name"] + "\t" + "{:,}".format(stock["amount"]) + "\t" + stock["date"] + "\t" + "{:,}".format(s["amount"]) + "\t" + s["date"] + "\t"
-                if change > 0:
+                if change < 0:
                     listing += "BUY"
-                    sold.append(changes)
-                elif change < 0:
-                    listing += "SELL"
                     bought.append(changes)
+                elif change > 0:
+                    listing += "SELL"
+                    sold.append(changes)
                 else:
                     listing += "NC"
                     same.append(changes)
