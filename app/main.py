@@ -1,7 +1,16 @@
 import xml.etree.ElementTree as ET
 import urllib.request
-import xmlparser
 from flask import Flask, render_template, request, url_for
+
+import sys
+from pathlib import Path
+file = Path(__file__).resolve()
+package_root_directory = file.parents[0]
+sys.path.append(str(package_root_directory))
+print(str(package_root_directory))
+
+import xmlparser
+
 
 app = Flask(__name__)
 
