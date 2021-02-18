@@ -46,12 +46,12 @@ def compare(request):
                     "amount": stock["amount"]
                 }
                 listing = stock["name"] + "\t" + "{:,}".format(stock["amount"]) + "\t" + stock["date"] + "\t" + "{:,}".format(s["amount"]) + "\t" + s["date"] + "\t"
-                if change < 0:
+                if change > 0:
                     listing += "BUY"
-                    bought.append(changes)
-                elif change > 0:
-                    listing += "SELL"
                     sold.append(changes)
+                elif change < 0:
+                    listing += "SELL"
+                    bought.append(changes)
                 else:
                     listing += "NC"
                     same.append(changes)
