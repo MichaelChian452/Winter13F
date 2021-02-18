@@ -3,11 +3,11 @@ import urllib.request
 from flask import Flask, render_template, request, url_for
 
 #finding the path to the app directory so that import xmlparser knows which directory to look in
-import sys
-from pathlib import Path
-file = Path(__file__).resolve()
-app_directory = file.parents[0]
-sys.path.append(str(app_directory))
+# import sys
+# from pathlib import Path
+# file = Path(__file__).resolve()
+# app_directory = file.parents[0]
+# sys.path.append(str(app_directory))
 
 import xmlparser
 
